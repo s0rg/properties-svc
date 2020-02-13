@@ -32,15 +32,15 @@ func NewUserStore(db *sql.DB) *storeUser {
 // Get returns UserSettings for given user and time.
 func (su *storeUser) Get(ctx context.Context, userID int, when time.Time) (s UserSettings, err error) {
 	const query = `
-	SELECT 
+	SELECT
 		settings,
         expires_at
-	FROM 
+	FROM
 		user_settings
 	WHERE
 		user_id = ?
 		AND
-		created_at < ?
+		created_at <= ?
 		AND
 		(expires_at IS NULL OR expires_at > ?)
 	ORDER BY
@@ -75,7 +75,7 @@ func (su *storeUser) Get(ctx context.Context, userID int, when time.Time) (s Use
 func (su *storeUser) Set(ctx context.Context, userID int, s UserSettings) (err error) {
 	const query = `
 INSERT INTO user_settings
-	(user_id, settings, expires_at) 
+	(user_id, settings, expires_at)
 VALUES
 	(?, ?, ?)`
 

@@ -48,16 +48,16 @@ func NewSettingStore(db *sql.DB) *storeSetting {
 func (ss *storeSetting) Get(ctx context.Context, when time.Time, bundles []int) (rv []Setting, err error) {
 	var query = `
 SELECT
-   	s.name,
+	s.name,
 	v.value
-FROM 
+FROM
     bundles b
 LEFT JOIN
-    bundles_values bv ON 
-	    bv.bundle_id = b.id 
-		AND 
-		bv.created_at < ? 
-		AND 
+    bundles_values bv ON
+		bv.bundle_id = b.id
+		AND
+		bv.created_at <= ?
+		AND
 		(bv.expired_at IS NULL OR bv.expired_at > ?)
 JOIN
 	settings_values v ON v.id = bv.value_id
@@ -132,7 +132,7 @@ SELECT
 	name,
 	tag
 FROM
-	bundles 
+	bundles
 ORDER BY id`
 
 	rows, err := ss.db.QueryContext(ctx, query)
@@ -152,9 +152,10 @@ SELECT
 	name,
 	tag
 FROM
-	bundles 
+	bundles
 WHERE
-	tag = ?`
+	tag = ?
+ORDER BY id`
 
 	rows, err := ss.db.QueryContext(ctx, query, tag)
 	if err != nil {
@@ -173,9 +174,10 @@ SELECT
 	name,
 	tag
 FROM
-	bundles 
+	bundles
 WHERE
-	id IN (` + intArray(bundles) + `)`
+	id IN (` + intArray(bundles) + `)
+ORDER BY id`
 
 	rows, err := ss.db.QueryContext(ctx, query)
 	if err != nil {
@@ -194,9 +196,10 @@ SELECT
 	name,
 	tag
 FROM
-	bundles 
+	bundles
 WHERE
-	name IN (` + strArray(names) + `)`
+	name IN (` + strArray(names) + `)
+ORDER BY id`
 
 	rows, err := ss.db.QueryContext(ctx, query)
 	if err != nil {

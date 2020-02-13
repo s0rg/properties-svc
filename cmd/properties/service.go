@@ -95,7 +95,7 @@ func (svc *service) handleGetSettings(w io.Writer, r *http.Request) int {
 	if whs := r.URL.Query().Get("when"); whs != "" {
 		when, err = time.Parse(time.RFC3339, whs)
 		if err != nil {
-			log.Println("get date parse error:", err)
+			log.Println("get-settings date parse error:", err)
 
 			return http.StatusBadRequest
 		}
@@ -105,7 +105,7 @@ func (svc *service) handleGetSettings(w io.Writer, r *http.Request) int {
 
 	res, err := svc.h.GetSettings(ctx, uid, when)
 	if err != nil {
-		log.Println("get handler error:", err)
+		log.Println("get-settings handler error:", err)
 
 		return http.StatusInternalServerError
 	}
