@@ -56,7 +56,7 @@ func (su *storeUser) Get(ctx context.Context, userID int, when time.Time) (s Use
 	err = su.db.QueryRowContext(ctx, query, userID, when, when).Scan(&buf, &snt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			err = nil
+			err = nil // its OK to return empty, if none found.
 		}
 
 		return

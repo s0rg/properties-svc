@@ -8,21 +8,21 @@ import (
 	"time"
 )
 
-// Setting
+// Setting holds name-value pair.
 type Setting struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
 
-// Bundle
+// Bundle holds single bundle info.
 type Bundle struct {
-	// ID bundle id, use it to set/unset bundles
+	// ID bundle id, use it to set/unset bundles.
 	ID int `json:"id"`
-	// ParentID holds parent's id or 0 if none
+	// ParentID holds parent's id or 0 if none.
 	ParentID int `json:"parent_id"`
-	// Name bundle name
+	// Name bundle name.
 	Name string `json:"name"`
-	// Tag for bundle, empty string if none
+	// Tag for bundle, empty string if none.
 	Tag string `json:"tag"`
 }
 
@@ -211,7 +211,7 @@ ORDER BY id`
 
 // sql helpers
 
-// strArray takes string slice, returns string usable as SQL `IN` argument
+// strArray takes string slice, returns string usable as SQL `IN` argument.
 func strArray(a []string) string {
 	var s string
 
@@ -226,7 +226,7 @@ func strArray(a []string) string {
 	return "'" + s + "'"
 }
 
-// intArray takes int slice, returns string usable as SQL `IN` argument
+// intArray takes int slice, returns string usable as SQL `IN` argument.
 func intArray(a []int) string {
 	if len(a) == 0 {
 		return "0"
@@ -241,7 +241,7 @@ func intArray(a []int) string {
 	return strings.Join(s, ",")
 }
 
-// readStrings reads string slice from rows, and closes them
+// readStrings reads string slice from rows, and closes them.
 func readStrings(rows *sql.Rows) (rv []string, err error) {
 	defer rows.Close()
 
@@ -258,7 +258,7 @@ func readStrings(rows *sql.Rows) (rv []string, err error) {
 	return rv, rows.Err()
 }
 
-// readBundles reads Bundle slice from rows, and closes them
+// readBundles reads Bundle slice from rows, and closes them.
 func readBundles(rows *sql.Rows) (bundles []Bundle, err error) {
 	defer rows.Close()
 
