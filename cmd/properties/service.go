@@ -13,6 +13,10 @@ import (
 	"time"
 )
 
+const (
+	httpTimeout = 5 * time.Second
+)
+
 type service struct {
 	addr      string
 	dbUser    *sql.DB
@@ -253,8 +257,8 @@ func (svc *service) Serve() error {
 	srv := http.Server{
 		Addr:         svc.addr,
 		Handler:      http.DefaultServeMux,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  httpTimeout,
+		WriteTimeout: httpTimeout,
 	}
 
 	return srv.ListenAndServe()
