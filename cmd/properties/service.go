@@ -26,7 +26,16 @@ type apiReq struct {
 	Expire *time.Time `json:"expire,omitempty"`
 }
 
-func mAPI(method string, fn func(w io.Writer, r *http.Request) int) http.HandlerFunc {
+// apiHandler is wrapper for http request handling, it takes any io.Writer
+// and incoming *http.Request
+//
+// if handler returns non-zero result, it will be send to client as http status (without any body)
+// otherwise, any content written to `w` goes to client with json mime as content-type in headers.
+type apiHandler func(w io.Writer, r *http.Request) int
+
+// mAPI takes method (GET, POST, etc...) and apiHandler,
+// and construct http.HandlerFunc for them.
+func mAPI(method string, handler apiHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (
 			buf  bytes.Buffer
@@ -40,7 +49,7 @@ func mAPI(method string, fn func(w io.Writer, r *http.Request) int) http.Handler
 			return
 		}
 
-		if code = fn(&buf, r); code != 0 {
+		if code = handler(&buf, r); code != 0 {
 			http.Error(w, http.StatusText(code), code)
 
 			return
@@ -54,7 +63,8 @@ func mAPI(method string, fn func(w io.Writer, r *http.Request) int) http.Handler
 	}
 }
 
-func mREQ(next func(w io.Writer, r *apiReq) int) func(w io.Writer, r *http.Request) int {
+// mREQ builds apiHandler for `apiReq`-consuming handlers, taking care of request decoding and validation.
+func mREQ(next func(w io.Writer, r *apiReq) int) apiHandler {
 	return func(w io.Writer, r *http.Request) int {
 		var rq apiReq
 
@@ -78,6 +88,7 @@ func newService(addr string, dbu, dbs *sql.DB) *service {
 	}
 }
 
+// handleGetSettings handles GET '/settings/{user_id}' requests.
 func (svc *service) handleGetSettings(w io.Writer, r *http.Request) int {
 	var uIDStr string
 
@@ -115,6 +126,7 @@ func (svc *service) handleGetSettings(w io.Writer, r *http.Request) int {
 	return 0
 }
 
+// handleListSettings handles GET '/settings' requests.
 func (svc *service) handleListSettings(w io.Writer, _ *http.Request) int {
 	ctx := context.Background()
 
@@ -130,6 +142,7 @@ func (svc *service) handleListSettings(w io.Writer, _ *http.Request) int {
 	return 0
 }
 
+// handleListBundles handles GET '/bundles' requests.
 func (svc *service) handleListBundles(w io.Writer, _ *http.Request) int {
 	ctx := context.Background()
 
@@ -145,6 +158,7 @@ func (svc *service) handleListBundles(w io.Writer, _ *http.Request) int {
 	return 0
 }
 
+// handleListTags handles GET '/tags' requests.
 func (svc *service) handleListTags(w io.Writer, _ *http.Request) int {
 	ctx := context.Background()
 
@@ -160,6 +174,7 @@ func (svc *service) handleListTags(w io.Writer, _ *http.Request) int {
 	return 0
 }
 
+// handleSetTag handles POST '/set-tag' requests.
 func (svc *service) handleSetTag(w io.Writer, req *apiReq) int {
 	ctx := context.Background()
 
@@ -172,6 +187,7 @@ func (svc *service) handleSetTag(w io.Writer, req *apiReq) int {
 	return http.StatusCreated
 }
 
+// handleSetBundle handles POST '/set-bundles' requests.
 func (svc *service) handleSetBundle(w io.Writer, req *apiReq) int {
 	ctx := context.Background()
 
@@ -184,6 +200,7 @@ func (svc *service) handleSetBundle(w io.Writer, req *apiReq) int {
 	return http.StatusCreated
 }
 
+// handleUnSetTag handles POST '/unset-tag' requests.
 func (svc *service) handleUnSetTag(w io.Writer, req *apiReq) int {
 	ctx := context.Background()
 
@@ -196,6 +213,7 @@ func (svc *service) handleUnSetTag(w io.Writer, req *apiReq) int {
 	return http.StatusCreated
 }
 
+// handleUnSetBundle handles POST '/unset-bundles' requests.
 func (svc *service) handleUnSetBundle(w io.Writer, req *apiReq) int {
 	ctx := context.Background()
 
@@ -219,10 +237,10 @@ func (svc *service) Serve() error {
 	http.HandleFunc("/settings/", mAPI(http.MethodGet, svc.handleGetSettings))
 
 	http.HandleFunc("/set-tag", mAPI(http.MethodPost, mREQ(svc.handleSetTag)))
-	http.HandleFunc("/set-bundle", mAPI(http.MethodPost, mREQ(svc.handleSetBundle)))
+	http.HandleFunc("/set-bundles", mAPI(http.MethodPost, mREQ(svc.handleSetBundle)))
 
 	http.HandleFunc("/unset-tag", mAPI(http.MethodPost, mREQ(svc.handleUnSetTag)))
-	http.HandleFunc("/unset-bundle", mAPI(http.MethodPost, mREQ(svc.handleUnSetBundle)))
+	http.HandleFunc("/unset-bundles", mAPI(http.MethodPost, mREQ(svc.handleUnSetBundle)))
 
 	srv := http.Server{
 		Addr:         svc.addr,

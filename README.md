@@ -26,10 +26,10 @@ objects, where `name` is a setting name and `value` is a setting value for user 
 
 ##### `POST`
 
-- `/set-tag` - sets bundles for user by tag.
-- `/set-bundle` - sets bundles for user by bundle names.
+- `/set-tag` - sets bundles for user by tag (by one at time).
+- `/set-bundles` - sets bundles for user by bundle names.
 - `/unset-tag` - un-sets bundles for user by tag.
-- `/unset-bundle` - un-sets bundles for user by bundle names.
+- `/unset-bundles` - un-sets bundles for user by bundle names.
 
 All `POST`-endpoints consumes following object for simplicity:
 ```
@@ -59,12 +59,12 @@ curl http://localhost:8080/settings/1
 
 set bundle 'deals-sen' for user 1
 ```
-curl -d '{"user_id": 1, "items": ["deals-sen"]}' http://localhost:8080/set-bundle
+curl -d '{"user_id": 1, "items": ["deals-sen"]}' http://localhost:8080/set-bundles
 ```
 
 un-set bundle 'deals-sen' for user 1
 ```
-curl -d '{"user_id": 1, "items": ["deals-sen"]}' http://localhost:8080/unset-bundle
+curl -d '{"user_id": 1, "items": ["deals-sen"]}' http://localhost:8080/unset-bundles
 ```
 
 check history
