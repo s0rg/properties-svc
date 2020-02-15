@@ -21,6 +21,7 @@ func mustGetEnv(key string) (val string) {
 	if val = os.Getenv(key); val == "" {
 		log.Fatal("no env value for:", key)
 	}
+
 	return
 }
 
@@ -38,10 +39,12 @@ func retry(times int, fn func() error) (err error) {
 		if err = fn(); err != nil {
 			return
 		}
+
 		if i < times {
 			time.Sleep(time.Second)
 		}
 	}
+
 	return
 }
 

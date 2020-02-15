@@ -46,7 +46,7 @@ func MergeBundles(curb, newb []Bundle) (merged []int) {
 		set[bid] = struct{}{}
 	}
 
-	for k, _ := range set {
+	for k := range set {
 		merged = append(merged, k)
 	}
 

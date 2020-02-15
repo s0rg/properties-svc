@@ -40,7 +40,7 @@ type storeSetting struct {
 	db *sql.DB
 }
 
-func NewSettingStore(db *sql.DB) *storeSetting {
+func NewSettingStore(db *sql.DB) SettingStore {
 	return &storeSetting{db: db}
 }
 
@@ -239,23 +239,6 @@ func intArray(a []int) string {
 	}
 
 	return strings.Join(s, ",")
-}
-
-// readInts reads int slice from rows, and closes them
-func readInts(rows *sql.Rows) (rv []int, err error) {
-	defer rows.Close()
-
-	var val int
-
-	for rows.Next() {
-		if err = rows.Scan(&val); err != nil {
-			return nil, err
-		}
-
-		rv = append(rv, val)
-	}
-
-	return rv, rows.Err()
 }
 
 // readStrings reads string slice from rows, and closes them

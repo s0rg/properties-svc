@@ -4,7 +4,7 @@ Service holds `properties` and their `values` for users,
 `properties` organized into `bundles`, each bundle holds
 one or more `values`.
 
-Bundles can be tagged, and organized into hierarchy by 
+Bundles can be tagged, and organized into hierarchy by
 parent-child relationships.
 
 The main purpose of service is to answer what values was set for
@@ -21,7 +21,7 @@ The main goal to achieve is a maximum performance in following limitations:
 - `/tags` - retuns list of available tag names.
 - `/bundles` - retuns list of available bundles.
 - `/settings` - returns list of available settings names.
-- `/settings/{user:int}[?when=RFC3339-date:string]` - returns list of `{"name": "...", "value": "..."}`
+- `/settings/{user:int}[?when=RFC3339:string]` - returns list of `{"name": "...", "value": "..."}`
 objects, where `name` is a setting name and `value` is a setting value for user in given time.
 
 ##### `POST`
@@ -34,9 +34,9 @@ objects, where `name` is a setting name and `value` is a setting value for user 
 All `POST`-endpoints consumes following object for simplicity:
 ```
 {
-  "user_id": {int}, 
+  "user_id": {int},
   "items": [{string},],
-  "expire": "RFC3339-date:string" 
+  "expire": "RFC3339:string"
 }
 ```
 

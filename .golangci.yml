@@ -1,0 +1,10 @@
+linters-settings:
+  gocritic:
+    enabled-tags:
+      - performance
+
+linters:
+  enable-all: true
+  disable:
+    - gomnd
+  fast: false

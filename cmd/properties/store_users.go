@@ -25,7 +25,7 @@ type storeUser struct {
 	db *sql.DB
 }
 
-func NewUserStore(db *sql.DB) *storeUser {
+func NewUserStore(db *sql.DB) UserStore {
 	return &storeUser{db: db}
 }
 
@@ -68,7 +68,7 @@ func (su *storeUser) Get(ctx context.Context, userID int, when time.Time) (s Use
 
 	err = cbor.Unmarshal(buf, &s.Bundles)
 
-	return
+	return s, err
 }
 
 // Set sets new settings for user.
