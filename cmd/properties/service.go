@@ -26,7 +26,7 @@ type apiReq struct {
 	Expire *time.Time `json:"expire,omitempty"`
 }
 
-// apiHandler is wrapper for http request handling, it takes any io.Writer
+// apiHandler is a wrapper for http request handling, it takes any io.Writer
 // and incoming *http.Request
 //
 // if handler returns non-zero result, it will be send to client as http status (without any body)
@@ -78,6 +78,16 @@ func mREQ(next func(w io.Writer, r *apiReq) int) apiHandler {
 
 		return next(w, &rq)
 	}
+}
+
+// getAPI is a shorthand for building GET-related api methods.
+func getAPI(h apiHandler) http.HandlerFunc {
+	return mAPI(http.MethodGet, h)
+}
+
+// reqAPI is a shorthand for building POST-related api methods.
+func reqAPI(h func(w io.Writer, r *apiReq) int) http.HandlerFunc {
+	return mAPI(http.MethodPost, mREQ(h))
 }
 
 func newService(addr string, dbu, dbs *sql.DB) *service {
@@ -230,17 +240,15 @@ func (svc *service) Serve() error {
 	svc.h.user = NewUserStore(svc.dbUser)
 	svc.h.setting = NewSettingStore(svc.dbSetting)
 
-	http.HandleFunc("/settings", mAPI(http.MethodGet, svc.handleListSettings))
-	http.HandleFunc("/bundles", mAPI(http.MethodGet, svc.handleListBundles))
-	http.HandleFunc("/tags", mAPI(http.MethodGet, svc.handleListTags))
+	http.HandleFunc("/tags", getAPI(svc.handleListTags))
+	http.HandleFunc("/bundles", getAPI(svc.handleListBundles))
+	http.HandleFunc("/settings", getAPI(svc.handleListSettings))
+	http.HandleFunc("/settings/", getAPI(svc.handleGetSettings))
 
-	http.HandleFunc("/settings/", mAPI(http.MethodGet, svc.handleGetSettings))
-
-	http.HandleFunc("/set-tag", mAPI(http.MethodPost, mREQ(svc.handleSetTag)))
-	http.HandleFunc("/set-bundles", mAPI(http.MethodPost, mREQ(svc.handleSetBundle)))
-
-	http.HandleFunc("/unset-tag", mAPI(http.MethodPost, mREQ(svc.handleUnSetTag)))
-	http.HandleFunc("/unset-bundles", mAPI(http.MethodPost, mREQ(svc.handleUnSetBundle)))
+	http.HandleFunc("/set-tag", reqAPI(svc.handleSetTag))
+	http.HandleFunc("/unset-tag", reqAPI(svc.handleUnSetTag))
+	http.HandleFunc("/set-bundles", reqAPI(svc.handleSetBundle))
+	http.HandleFunc("/unset-bundles", reqAPI(svc.handleUnSetBundle))
 
 	srv := http.Server{
 		Addr:         svc.addr,
