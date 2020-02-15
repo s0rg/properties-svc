@@ -36,7 +36,7 @@ func connectDB(dsn string) (*sql.DB, error) {
 
 func retry(times int, fn func() error) (err error) {
 	for i := 0; i < times; i++ {
-		if err = fn(); err != nil {
+		if err = fn(); err == nil {
 			return
 		}
 
