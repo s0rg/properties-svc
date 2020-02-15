@@ -35,14 +35,14 @@ func connectDB(dsn string) (*sql.DB, error) {
 }
 
 func retry(times int, fn func() error) (err error) {
+	const delay = time.Millisecond * 500
+
 	for i := 0; i < times; i++ {
-		if err = fn(); err == nil {
+		if err = fn(); err == nil || i == times {
 			return
 		}
 
-		if i < times {
-			time.Sleep(time.Second)
-		}
+		time.Sleep(delay)
 	}
 
 	return
@@ -54,39 +54,39 @@ func serve(addr, userDSN, settingDSN string) (err error) {
 		sDB *sql.DB
 	)
 
-	connUsers := func() (err error) {
+	uDBConn := func() (err error) {
 		uDB, err = connectDB(userDSN)
 		return
 	}
 
-	closeUsers := func() {
+	uDBClose := func() {
 		if err := uDB.Close(); err != nil {
 			log.Println("user-db close fail:", err)
 		}
 	}
 
-	connSettings := func() (err error) {
+	sDBConn := func() (err error) {
 		sDB, err = connectDB(settingDSN)
 		return
 	}
 
-	closeSettings := func() {
+	sDBClose := func() {
 		if err := sDB.Close(); err != nil {
 			log.Println("setting-db close fail:", err)
 		}
 	}
 
-	if err = retry(retryAttempts, connUsers); err != nil {
+	if err = retry(retryAttempts, uDBConn); err != nil {
 		return fmt.Errorf("user-db connect fail: %w", err)
 	}
 
-	defer closeUsers()
+	defer uDBClose()
 
-	if err = retry(retryAttempts, connSettings); err != nil {
+	if err = retry(retryAttempts, sDBConn); err != nil {
 		return fmt.Errorf("setting-db connect fail: %w", err)
 	}
 
-	defer closeSettings()
+	defer sDBClose()
 
 	srv := newService(addr, uDB, sDB)
 
